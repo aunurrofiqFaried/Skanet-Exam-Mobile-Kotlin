@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.SkanetExam.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#FFFFFF</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/logo_splash</item>
+        <item name="postSplashScreenTheme">@style/Theme.SkanetExam</item>
+    </style>
+    <style name="Theme.SkanetExam" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
