@@ -13,8 +13,8 @@ import java.util.TimeZone
 
 object ApiConfig {
     // Salin dari file lama: IP laptop kamu dan API key
-    const val BASE_URL = "https://exam.smkn1-takeran.sch.id/"
-    const val API_KEY = "smkntakeranjayajayajaya"
+    const val BASE_URL = "https://ganti dengan api anda/"
+    const val API_KEY = "ganti api anda"
 }
 
 data class ExamConfig(
