@@ -175,36 +175,49 @@ object Api {
         body: JSONObject? = null,
         token: String? = null
     ): JSONObject {
-        val conn = URL(ApiConfig.BASE_URL + path).openConnection() as HttpURLConnection
-        try {
-            conn.requestMethod = method
-            conn.connectTimeout = 8000
-            conn.readTimeout = 8000
-            conn.setRequestProperty("Accept", "application/json")
-            conn.setRequestProperty("X-API-Key", ApiConfig.API_KEY)
-            if (token != null) conn.setRequestProperty("X-Auth-Token", token)
+        var percobaan = 0
+        while (true) {
+            percobaan++
+            val conn = URL(ApiConfig.BASE_URL + path).openConnection() as HttpURLConnection
+            try {
+                conn.requestMethod = method
+                conn.connectTimeout = 8000
+                conn.readTimeout = 8000
+                conn.setRequestProperty("Accept", "application/json")
+                conn.setRequestProperty("X-API-Key", ApiConfig.API_KEY)
+                if (token != null) conn.setRequestProperty("X-Auth-Token", token)
 
-            if (body != null) {
-                conn.doOutput = true
-                conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
-                conn.outputStream.use { it.write(body.toString().toByteArray(Charsets.UTF_8)) }
-            }
+                if (body != null) {
+                    conn.doOutput = true
+                    conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+                    conn.outputStream.use { it.write(body.toString().toByteArray(Charsets.UTF_8)) }
+                }
 
-            val code = conn.responseCode
-            val stream = if (code in 200..299) conn.inputStream else conn.errorStream
-            val text = stream?.bufferedReader()?.use { it.readText() } ?: ""
-            val json = try {
-                JSONObject(text)
-            } catch (e: Exception) {
-                JSONObject()
-            }
+                val code = conn.responseCode
 
-            if (code !in 200..299) {
-                throw ApiException(json.optString("error", "Server membalas kode $code."), code)
+                // Server sedang penuh: ditolak sebelum diproses, aman diulang (maks 3 kali)
+                if ((code == 502 || code == 503 || code == 508) && percobaan < 3) {
+                    Thread.sleep(500L + (Math.random() * 1500).toLong())
+                    continue
+                }
+
+                val stream = if (code in 200..299) conn.inputStream else conn.errorStream
+                val text = stream?.bufferedReader()?.use { it.readText() } ?: ""
+                val json = try {
+                    JSONObject(text)
+                } catch (e: Exception) {
+                    JSONObject()
+                }
+
+                if (code !in 200..299) {
+                    throw ApiException(
+                        json.optString("error", "Server membalas kode $code."), code
+                    )
+                }
+                return json
+            } finally {
+                conn.disconnect()
             }
-            return json
-        } finally {
-            conn.disconnect()
         }
     }
 

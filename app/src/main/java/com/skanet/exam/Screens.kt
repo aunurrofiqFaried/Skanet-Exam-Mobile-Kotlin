@@ -221,7 +221,7 @@ fun DashboardScreen(
     // Segarkan jadwal dari server tiap 30 detik
     LaunchedEffect(Unit) {
         while (true) {
-            delay(30_000)
+            delay(60_000)
             onRefresh()
         }
     }
